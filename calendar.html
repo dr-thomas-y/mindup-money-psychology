@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>加入行事曆｜讓錢自己找上你</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#ffffff; --fg:#15161a; --muted:#5d6068;
+    --accent:#1b6bd6; --accent-fg:#ffffff; --line:#d9dce3;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#101114; --fg:#f2f3f5; --muted:#a2a6af; --line:#2c2f36; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 16px 56px; background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  main{max-width:460px;margin:0 auto}
+  .kicker{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  h1{font-size:21px;line-height:1.5;margin:0 0 10px;font-weight:700}
+  .when{font-size:16px;color:var(--muted);margin:0 0 28px}
+  a.btn{
+    display:block;padding:16px;border-radius:14px;text-decoration:none;
+    font-weight:700;font-size:16px;text-align:center;margin:0 0 12px;
+  }
+  .primary{background:var(--accent);color:var(--accent-fg)}
+  .ghost{border:1.5px solid var(--line);color:var(--fg)}
+  .note{font-size:13.5px;color:var(--muted);margin-top:22px}
+  .note code{font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">全心策略 Mind-Up</p>
+  <h1>免費線上課｜讓錢自己找上你<br>美國商學院的「財富心理學」</h1>
+  <p class="when">10/4（週日）20:00–21:00　線上 Zoom</p>
+
+  <a class="btn primary" id="primary" href="event.ics">加入行事曆</a>
+  <a class="btn ghost" id="gcal" href="#">改用 Google 日曆</a>
+
+  <p class="note" id="note">正在幫你打開行事曆…</p>
+</main>
+
+<script>
+(function () {
+  var ICS_PATH = 'event.ics';
+  var icsAbs = new URL(ICS_PATH, location.href).href;
+  var webcal = icsAbs.replace(/^https?:/, 'webcal:');
+
+  var zoom = 'https://us06web.zoom.us/j/86778320701?pwd=0i97b5T7X1sqh1n8wp39XUuzHk75sU.1';
+  var gcal = 'https://calendar.google.com/calendar/render?' + [
+    'action=TEMPLATE',
+    'text=' + encodeURIComponent('免費線上課：讓錢自己找上你（財富心理學）'),
+    'dates=20261004T120000Z/20261004T130000Z',
+    'details=' + encodeURIComponent('袁希博士 × 易樟老師\n會議 ID 867 7832 0701｜密碼 779564\n' + zoom),
+    'location=' + encodeURIComponent(zoom)
+  ].join('&');
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+
+  var primary = document.getElementById('primary');
+  var note = document.getElementById('note');
+  document.getElementById('gcal').href = gcal;
+
+  // iOS 用 webcal: 這個自訂協定，手機作業系統會直接接手交給「行事曆」App，
+  // 不經過瀏覽器，所以在 IG 內建瀏覽器裡也跳得出去，而且不用登入任何帳號。
+  var target = isIOS ? webcal : icsAbs;
+  primary.href = target;
+
+  if (isIOS || isAndroid) {
+    // 先讓畫面畫出來，萬一自動跳轉沒成功，使用者還看得到按鈕。
+    setTimeout(function () { location.href = target; }, 350);
+    setTimeout(function () {
+      note.textContent = isIOS
+        ? '沒有自動跳出來的話，直接按上面那顆「加入行事曆」。'
+        : '沒有自動跳出來的話，按上面那顆「加入行事曆」；若手機沒有可以開 .ics 的行事曆 App，就改用 Google 日曆。';
+    }, 2200);
+  } else {
+    note.textContent = '按「加入行事曆」會下載 .ics，用你電腦上的行事曆軟體打開即可。';
+  }
+})();
+</script>
+</body>
+</html>
