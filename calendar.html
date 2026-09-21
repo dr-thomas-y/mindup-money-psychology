@@ -40,7 +40,7 @@
   <p class="when">10/4（週日）20:00–21:00　線上 Zoom</p>
 
   <a class="btn primary" id="primary" href="event.ics">加入行事曆</a>
-  <a class="btn ghost" id="gcal" href="#">改用 Google 日曆</a>
+  <a class="btn ghost" id="second" href="#">改用 Google 日曆</a>
 
   <p class="note" id="note">正在幫你打開行事曆…</p>
 </main>
@@ -66,23 +66,38 @@
   var isAndroid = /Android/.test(ua);
 
   var primary = document.getElementById('primary');
+  var second = document.getElementById('second');
   var note = document.getElementById('note');
-  document.getElementById('gcal').href = gcal;
 
-  // iOS 用 webcal: 這個自訂協定，手機作業系統會直接接手交給「行事曆」App，
-  // 不經過瀏覽器，所以在 IG 內建瀏覽器裡也跳得出去，而且不用登入任何帳號。
-  var target = isIOS ? webcal : icsAbs;
-  primary.href = target;
+  // iOS 的兩條路差很多：
+  //  - 直接開 .ics（在 Safari 裡）＝跳出那場活動，按一下「加入行事曆」就好。
+  //  - webcal: ＝訂閱行事曆流程，要 Subscribe → Find → 加入，多按兩次。
+  // 所以優先用 x-safari-https: 這個自訂協定把網址踢給真正的 Safari。
+  // 它跟 webcal: 一樣由 iOS 接手，因此在 IG 內建瀏覽器裡也跳得出去，且不碰任何帳號。
+  var safariIcs = icsAbs.replace(/^https:/, 'x-safari-https:');
 
-  if (isIOS || isAndroid) {
-    // 先讓畫面畫出來，萬一自動跳轉沒成功，使用者還看得到按鈕。
-    setTimeout(function () { location.href = target; }, 350);
+  if (isIOS) {
+    primary.href = safariIcs;
+    second.href = webcal;
+    second.textContent = '改用訂閱方式加入';
+    setTimeout(function () { location.href = safariIcs; }, 350);
+    // 還停在這頁＝x-safari 沒被接住，退回訂閱那條路，至少加得進去。
     setTimeout(function () {
-      note.textContent = isIOS
-        ? '沒有自動跳出來的話，直接按上面那顆「加入行事曆」。'
-        : '沒有自動跳出來的話，按上面那顆「加入行事曆」；若手機沒有可以開 .ics 的行事曆 App，就改用 Google 日曆。';
-    }, 2200);
+      if (document.visibilityState !== 'visible') return;
+      note.textContent = '沒跳出來的話，按上面那顆「加入行事曆」。';
+      primary.href = icsAbs;
+    }, 1600);
+  } else if (isAndroid) {
+    primary.href = icsAbs;
+    second.href = gcal;
+    setTimeout(function () { location.href = icsAbs; }, 350);
+    setTimeout(function () {
+      if (document.visibilityState !== 'visible') return;
+      note.textContent = '沒跳出來的話，按上面那顆「加入行事曆」；手機沒有可開 .ics 的行事曆 App，就改用 Google 日曆。';
+    }, 1600);
   } else {
+    primary.href = icsAbs;
+    second.href = gcal;
     note.textContent = '按「加入行事曆」會下載 .ics，用你電腦上的行事曆軟體打開即可。';
   }
 })();
